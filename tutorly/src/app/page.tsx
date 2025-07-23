@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
-import { StudentNav } from "./components/StudentNav";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { isSignedIn, user } = useUser();
@@ -12,7 +12,6 @@ export default function Home() {
   return (
     <main className="p-6">
       <header className="flex items-center justify-between mb-4">
-        <StudentNav />
         <h1 className="text-2xl font-bold">Tasks</h1>
         <UserButton />
       </header>
@@ -23,7 +22,7 @@ export default function Home() {
           
         </div>
       ) : (
-        <p>Please sign in to see tasks. <SignInButton /></p>
+        <p>Please sign in to see tasks. <Button><SignInButton /> </Button ></p>
         
       )}
     </main>

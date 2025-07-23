@@ -5,7 +5,7 @@ export default defineSchema({
   /* ==========  USERS  ========== */
   users: defineTable({
     clerkId: v.string(),
-    role: v.union(v.literal("student"), v.literal("tutor")), // ← you already had roles
+    role: v.union(v.literal("student"), v.literal("tutor"), v.literal("admin")), // ← you already had roles
     name: v.string(),
     email: v.string(),
     avatarUrl: v.string(),

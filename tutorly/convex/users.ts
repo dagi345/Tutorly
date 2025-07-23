@@ -82,3 +82,13 @@ export const changeRole = mutation({
     await ctx.db.patch(userId, { role: newRole, updatedAt: now() });
   },
 });
+
+export const getCurrentUser = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+      .unique();
+  },
+});
