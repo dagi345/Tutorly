@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api"; // Adjust the path as needed
+import { api } from "../../convex/_generated/api"; // Adjust the path as needed
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
@@ -25,11 +25,12 @@ export default function NavBar() {
       
       { label: "Browse-Tutors", href: "/student/dashboard" },
       { label: "Become-a-Tutor", href: "/student/become-a-tutor" },
+      { label: "Upcoming-Lessons", href: "/student/upcoming-lessons"},
     ],
     tutor: [
       { label: "Dashboard", href: "/tutor/dashboard" },
-      { label: "My-Lessons", href: "/tutor/lessons" },
-      { label: "Calendar", href: "/tutor/calendar" },
+      { label: "Profile", href: "/tutor/profile" },
+      { label: "Schedules", href: "/tutor/schedules" },
     ],
     admin: [
       { label: "Dashboard", href: "/admin/dashboard" },

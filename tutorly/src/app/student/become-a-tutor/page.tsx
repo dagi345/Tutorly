@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 const formSchema = z.object({
   subjects: z.string().min(1, "At least one subject"),
@@ -38,15 +39,19 @@ function AvailabilityPicker({ onChange }: { onChange: (slots: string[]) => void 
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
   useEffect(() => {
-    const isoSlots = Object.entries(selected).flatMap(([day, hrs]) =>
-      hrs.map(h => {
-        const d = new Date();
-        d.setHours(h, 0, 0, 0);
-        return d.toISOString().slice(0, 16).replace("T", "T" + h.toString().padStart(2, "0") + ":00");
-      })
-    );
-    onChange(isoSlots);
-  }, [selected]);
+  const isoSlots = Object.entries(selected).flatMap(([day, hrs]) => {
+    const base = new Date();                 // today
+    const dayIndex = DAYS.indexOf(day);      // 0-6
+    const diff = (dayIndex + 7 - base.getDay()) % 7;
+    const date = new Date(base);
+    date.setDate(base.getDate() + diff);     // move to correct weekday
+    return hrs.map(h => {
+      date.setHours(h, 0, 0, 0);
+      return date.toISOString();             // ✅ full ISO
+    });
+  });
+  onChange(isoSlots);
+}, [selected, onChange]);
 
   const toggleDay = (day: string, active: boolean) =>
     setSelected(prev => {
@@ -122,32 +127,36 @@ export default function BecomeTutorPage() {
   if (!user) return <p className="p-4 h-screen flex items-center justify-center">Please sign in to become a tutor.</p>;
   if (!convexUser) return <p className="p-4 h-screen flex items-center justify-center">Loading…</p>;
 
-  async function onSubmit(values: FormValues) {
-    if (!convexUser) {
-      // Optionally show an error or return early
-      return;
-    }
+ async function onSubmit(values: FormValues) {
+  if (!convexUser) return;
 
-    await createProfile({
-      userId: convexUser._id,
-      subjects: values.subjects.split(",").map(s => s.trim()),
-      hourlyRate: values.hourlyRate * 100,
-      availability: values.availability,
-      bio: values.bio,
-    });
-
-    if (values.planTemplateTitle) {
-      await updateProfile({
-        userId: convexUser._id,
-        updates: {
-          planTemplate: { title: values.planTemplateTitle, lessonCount: values.planTemplateCount! },
-        },
-      });
-    }
-
-    await changeRole({ userId: convexUser._id, newRole: "tutor" });
-    router.push("/tutor/dashboard");
+  if (convexUser.role === "tutor") {
+    toast.error("You are already a tutor!");
+    return;
   }
+
+  await createProfile({
+    userId: convexUser._id,
+    subjects: values.subjects.split(",").map(s => s.trim()),
+    hourlyRate: values.hourlyRate * 100,
+    availability: values.availability,
+    bio: values.bio,
+  });
+
+  if (values.planTemplateTitle) {
+    await updateProfile({
+      userId: convexUser._id,
+      updates: {
+        planTemplate: { title: values.planTemplateTitle, lessonCount: values.planTemplateCount! },
+      },
+    });
+  }
+
+  await changeRole({ userId: convexUser._id, newRole: "tutor" });
+
+  toast.success("Profile created! You are now a tutor.");
+  router.push(`/tutor/dashboard`);
+}
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-slate-100">

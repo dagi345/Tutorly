@@ -1,14 +1,15 @@
 "use client";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Id } from "../../../convex/_generated/dataModel";
+import { Id } from "../../convex/_generated/dataModel";
 import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle, Star } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { hasBooked } from "../../convex/tutorProfiles";
 
 type TutorCardProps = {
   tutor: {
@@ -27,6 +28,7 @@ type TutorCardProps = {
 export default function TutorCard({ tutor }: TutorCardProps) {
   const { user } = useUser();
 
+  
   // 1️⃣  fetch once
   
   const lessonCount = useQuery(api.tutorProfiles.getLessonCount, {
@@ -39,12 +41,20 @@ const hasPrevious = useQuery(
   currentUser ? { tutorId: tutor.userId as Id<"users">, studentId: currentUser._id } : "skip"
 );
 
+console.log("blalaaaaaaaaaaaaaaaaaaaaaaaaaaaa", hasPrevious);
+
   // helper
   const yearsOnPlatform = Math.round(
     (Date.now() - new Date(tutor.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365)
   );
 
   const buttonText = hasPrevious ? "Book Lesson" : "Book Free Trial";
+
+
+  console.log(tutor)
+
+
+  
 
   return (
     <Card className="hover:shadow-lg transition-shadow flex flex-col border-2 px-4">
@@ -73,12 +83,14 @@ const hasPrevious = useQuery(
           {/* badges */}
           <div className="flex gap-2 mt-2">
             {tutor.isApproved && (
+
               <Badge className="bg-green-100 text-green-800">
                 <CheckCircle size={12} className="mr-1" />
                 Approved
               </Badge>
             )}
             <Badge className="bg-green-100 text-green-800">Available this week</Badge>
+
           </div>
         </div>
       </div>
@@ -91,7 +103,7 @@ const hasPrevious = useQuery(
         </p>
 
         <div className="w-full  flex justify-end ">
-          <Link href={`/tutor/${tutor.userId}`}>
+          <Link href={`/tutor/${tutor._id}`}>
           <Button size="lg" className="text-md">
             {buttonText}
           </Button>

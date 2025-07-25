@@ -22,7 +22,7 @@ export default function Home() {
           
         </div>
       ) : (
-        <p>Please sign in to see tasks. <Button><SignInButton /> </Button ></p>
+        <p>Please sign in to see tasks. <SignInButton /></p>
         
       )}
     </main>

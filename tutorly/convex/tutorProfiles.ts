@@ -4,6 +4,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { assertDoc, now } from "./_utils";
 
 // ---------- Mutations ----------
+
 export const createProfile = mutation({
   args: {
     userId: v.id("users"),
@@ -13,13 +14,20 @@ export const createProfile = mutation({
     bio: v.string(),
   },
   handler: async (ctx, args) => {
+    // ✅ normalize every slot to ISO
+    const isoSlots = args.availability.map(d => new Date(d).toISOString());
+
     return ctx.db.insert("tutorProfiles", {
-      ...args,
+      userId: args.userId,
+      subjects: args.subjects,
+      hourlyRate: args.hourlyRate,
+      bio: args.bio,
+      availability: isoSlots, // <-- cleaned
       trialUsedCount: 0,
       rating: 0,
       isApproved: false,
-      createdAt: now(),
-      updatedAt: now(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
   },
 });
@@ -43,7 +51,16 @@ export const updateProfile = mutation({
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .unique();
     if (!profile) throw new Error("Profile not found");
-    await ctx.db.patch(profile._id, { ...updates, updatedAt: now() });
+
+    // ✅ if availability is being updated, sanitize it
+    const cleanedUpdates = { ...updates };
+    if (updates.availability) {
+      cleanedUpdates.availability = updates.availability.map(d =>
+        new Date(d).toISOString()
+      );
+    }
+
+    await ctx.db.patch(profile._id, { ...cleanedUpdates, updatedAt: new Date().toISOString() });
   },
 });
 
@@ -71,7 +88,7 @@ export const updateProfile = mutation({
 
 
 
-export const getByUserId = query({
+export const getTutorByUserId = query({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     return ctx.db
@@ -82,6 +99,25 @@ export const getByUserId = query({
 });
 
 
+
+export const getByTutorProfileId = query({
+  args: { tutorProfileId: v.id("tutorProfiles") },
+  handler: async (ctx, { tutorProfileId }) => {
+    // 1️⃣  get the tutor profile
+    const profile = await ctx.db.get(tutorProfileId);
+    if (!profile) return null;
+
+    // 2️⃣  get the matching user row
+    const user = await ctx.db.get(profile.userId);
+    if (!user) return null;
+
+    // 3️⃣  return a single object with everything
+    return {
+      ...profile,
+      user, // the entire users row
+    };
+  },
+});
 
 
 // convex/tutorProfiles.ts
@@ -195,4 +231,30 @@ export const hasBooked = query({
       .query("lessons")
       .withIndex("by_student", (q) => q.eq("studentId", studentId))
       .collect()).find((l) => l.tutorId === tutorId),
+});
+
+
+
+// convex/tutorProfiles.ts
+export const recalcRating = mutation({
+  args: { tutorUserId: v.id("users") },
+  handler: async (ctx, { tutorUserId }) => {
+    const reviews = await ctx.db
+      .query("reviews")
+      .withIndex("by_tutor", (q) => q.eq("tutorId", tutorUserId))
+      .collect();
+
+    const avg =
+      reviews.length === 0
+        ? 0
+        : reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+    const profile = await ctx.db
+      .query("tutorProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", tutorUserId))
+      .unique();
+    if (!profile) return;
+
+    await ctx.db.patch(profile._id, { rating: avg });
+  },
 });

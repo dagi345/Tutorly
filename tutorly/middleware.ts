@@ -26,9 +26,8 @@ export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl.clone();
   console.log(url)
 
- 
 
-
+  
   if (url.pathname.startsWith("/admin") && role !== "admin")
     return NextResponse.redirect(new URL("/student/dashboard", req.url));
   if (url.pathname.startsWith("/tutor") && !["tutor", "admin"].includes(role))

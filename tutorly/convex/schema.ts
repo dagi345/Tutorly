@@ -48,6 +48,7 @@ export default defineSchema({
     cost: v.number(),
     isTrial: v.boolean(),
     packageId: v.optional(v.string()),
+    
     createdAt: v.string(),
     updatedAt: v.string()
   })

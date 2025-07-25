@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { motion } from "framer-motion";
 import TutorCard from "../../../components/TutorCard";
@@ -11,7 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -34,7 +39,9 @@ export default function StudentDashboardPage() {
       (t) =>
         (!q ||
           t.subjects.some((s) => s.toLowerCase().includes(q.toLowerCase())) ||
-          (t.user && t.user.name && t.user.name.toLowerCase().includes(q.toLowerCase()))) &&
+          (t.user &&
+            t.user.name &&
+            t.user.name.toLowerCase().includes(q.toLowerCase()))) &&
         t.hourlyRate <= maxPrice
     ) ?? [];
 
@@ -58,7 +65,8 @@ export default function StudentDashboardPage() {
               Find your perfect 1:1 tutor
             </h1>
             <p className="mt-3 text-lg text-slate-600">
-              Personalised online tutoring for every subject, skill level, and schedule.
+              Personalised online tutoring for every subject, skill level, and
+              schedule.
             </p>
             <Badge className="mt-4">2 000+ tutors • 4.9 ★ Trustpilot</Badge>
           </div>
@@ -99,7 +107,9 @@ export default function StudentDashboardPage() {
               <Accordion type="single" collapsible>
                 <AccordionItem value="availability">
                   <AccordionTrigger className="w-full flex justify-between items-center">
-                    <Label className="text-sm font-semibold">Availability</Label>
+                    <Label className="text-sm font-semibold">
+                      Availability
+                    </Label>
                     {(selectedDays.length || selectedHours.length) && (
                       <Badge variant="outline">
                         {selectedDays.length}d • {selectedHours.length}h
@@ -117,7 +127,11 @@ export default function StudentDashboardPage() {
                       className="flex-wrap gap-1"
                     >
                       {DAYS.map((d) => (
-                        <ToggleGroupItem key={d} value={d} className="px-2 py-1 text-xs">
+                        <ToggleGroupItem
+                          key={d}
+                          value={d}
+                          className="px-2 py-1 text-xs"
+                        >
                           {d}
                         </ToggleGroupItem>
                       ))}
@@ -126,12 +140,13 @@ export default function StudentDashboardPage() {
                     {/* Hours grid */}
                     <Label className="block mt-4 mb-2">Hours</Label>
                     <ToggleGroup
-  type="multiple"
-  value={selectedHours.map(String)}
-  onValueChange={(vals) => setSelectedHours(vals.map(Number))}
-  className="grid grid-cols-6 gap-1"
->
-                   
+                      type="multiple"
+                      value={selectedHours.map(String)}
+                      onValueChange={(vals) =>
+                        setSelectedHours(vals.map(Number))
+                      }
+                      className="grid grid-cols-6 gap-1"
+                    >
                       {HOURS.map((h) => (
                         <ToggleGroupItem
                           key={h}
@@ -148,8 +163,7 @@ export default function StudentDashboardPage() {
                           {h.toString().padStart(2, "0")}:00
                         </ToggleGroupItem>
                       ))}
-                    
-</ToggleGroup>
+                    </ToggleGroup>
                     <Button
                       variant="ghost"
                       size="sm"

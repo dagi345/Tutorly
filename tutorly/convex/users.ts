@@ -83,6 +83,7 @@ export const changeRole = mutation({
   },
 });
 
+
 export const getCurrentUser = query({
   args: { clerkId: v.string() },
   handler: async (ctx, { clerkId }) => {
