@@ -28,14 +28,14 @@ export default clerkMiddleware(async (auth, req) => {
 
 
   
-  if (url.pathname.startsWith("/admin") && role !== "admin")
-    return NextResponse.redirect(new URL("/student/dashboard", req.url));
-  if (url.pathname.startsWith("/tutor") && !["tutor", "admin"].includes(role))
-    return NextResponse.redirect(new URL("/student/dashboard", req.url));
-  if (url.pathname.startsWith("/student") && role === "tutor")
-    return NextResponse.redirect(new URL("/tutor/dashboard", req.url));
-  if (url.pathname.startsWith("/student") && role === "admin")
-    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+  // if (url.pathname.startsWith("/admin") && role !== "admin")
+  //   return NextResponse.redirect(new URL("/student/dashboard", req.url));
+  // if (url.pathname.startsWith("/tutor") && !["tutor", "admin"].includes(role))
+  //   return NextResponse.redirect(new URL("/student/dashboard", req.url));
+  // if (url.pathname.startsWith("/student") && role === "tutor")
+  //   return NextResponse.redirect(new URL("/tutor/dashboard", req.url));
+  // if (url.pathname.startsWith("/student") && role === "admin")
+  //   return NextResponse.redirect(new URL("/admin/dashboard", req.url));
 });
 
 export const config = {

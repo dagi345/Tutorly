@@ -25,12 +25,12 @@ export default function NavBar() {
       
       { label: "Browse-Tutors", href: "/student/dashboard" },
       { label: "Become-a-Tutor", href: "/student/become-a-tutor" },
-      { label: "Upcoming-Lessons", href: "/student/upcoming-lessons"},
+      { label: "Upcoming-Lessons", href: "/student/lessons"},
     ],
     tutor: [
-      { label: "Dashboard", href: "/tutor/dashboard" },
-      { label: "Profile", href: "/tutor/profile" },
-      { label: "Schedules", href: "/tutor/schedules" },
+      { label: "Dashboard", href: "/tutors/dashboard" },
+      { label: "Profile", href: "/tutors/profile" },
+      { label: "Schedules", href: "/tutors/schedule" },
     ],
     admin: [
       { label: "Dashboard", href: "/admin/dashboard" },

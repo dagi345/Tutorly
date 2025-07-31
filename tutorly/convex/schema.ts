@@ -35,26 +35,24 @@ export default defineSchema({
     .index("by_userId", ["userId"]),
 
   /* ==========  LESSONS (BOOKINGS)  ========== */
-  lessons: defineTable({
-    tutorId: v.id("users"),
-    studentId: v.id("users"),
-    datetime: v.string(), // ISO
-    status: v.union(
-      v.literal("booked"),
-      v.literal("completed"),
-      v.literal("cancelled")
-    ),
-    durationMinutes: v.number(),
-    cost: v.number(),
-    isTrial: v.boolean(),
-    packageId: v.optional(v.string()),
-    
-    createdAt: v.string(),
-    updatedAt: v.string()
-  })
-    .index("by_tutor", ["tutorId"])
-    .index("by_student", ["studentId"]),
+lessons: defineTable({
+  tutorId: v.id("users"),
+  studentId: v.id("users"),
+  datetime: v.string(),
+  status: v.union(v.literal("booked"), v.literal("started"), v.literal("completed"), v.literal("cancelled")),
+  durationMinutes: v.number(),
+  cost: v.number(),
+  isTrial: v.boolean(),
+  isRecurring: v.optional(v.boolean()),
+  callId: v.optional(v.string()),
+  createdAt: v.string(),
+  updatedAt: v.string(),
+})
+  .index("by_tutor", ["tutorId"])
+  .index("by_student", ["studentId"])
+  .index("by_status", ["status"]),
 
+  
   /* ==========  REVIEWS  ========== */
   reviews: defineTable({
     tutorId: v.id("users"),

@@ -2,20 +2,23 @@
 "use client";
 
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
-import { GenericId } from "convex/values";
+import { api } from "../../../../../../convex/_generated/api";
+import { Id } from "../../../../../../convex/_generated/dataModel";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
-import { format, parseISO, isBefore, startOfDay, addDays } from "date-fns";
+import { format, parseISO, isBefore, startOfWeek, addDays } from "date-fns";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import Loader from "@/components/Loader";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function TutorDetailPage() {
   const params = useParams();
-  const tutorProfileId = params.id as GenericId<"tutorProfiles">;
+  const tutorProfileId = params.id as Id<"tutorProfiles">;
 
   const { user } = useUser();
   const tutor = useQuery(api.tutorProfiles.getByTutorProfileId, {
@@ -26,19 +29,21 @@ export default function TutorDetailPage() {
     api.lessons.listByTutor,
     tutor?.user ? { tutorId: tutor.user._id } : "skip"
   );
+
   const reviews = useQuery(
-  api.reviews.listByTutor,
-  tutor?.user ? { tutorUserId: tutor.user._id } : "skip"
-);
+    api.reviews.listByTutor,
+    tutor?.user ? { tutorUserId: tutor.user._id } : "skip"
+  );
 
   const bookLesson = useMutation(api.lessons.book);
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
 
-  if (!tutor) return <p className="p-8 text-center">Loading…</p>;
+  if (tutor === undefined) return <div className="flex justify-center items-center h-screen"><Loader /></div>;
+  if (tutor === null) return <p className="p-8 text-center">Tutor not found.</p>;
 
-  /* ---------- helpers ---------- */
   const bookedSlots = new Set(
     (lessons || [])
       .filter((l) => l.status === "booked")
@@ -46,27 +51,41 @@ export default function TutorDetailPage() {
   );
 
   const now = new Date();
+  
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  /* ---------- build weekly timetable ---------- */
-  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const timetable = DAYS.map((label, idx) => {
-    const dayDate = addDays(startOfDay(now), idx - now.getDay() + 1); // Mon-Sun of current week
-    const slots = (tutor.availability || [])
-      .map((iso) => {
-        const slot = parseISO(iso);
-        if (isNaN(slot.getTime())) return null;
-        const slotDay = slot.getDay();
-        if (slotDay !== idx) return null; // not this weekday
-        return iso;
-      })
-      .filter(Boolean) as string[];
-    return { label, dayDate, slots };
-  }).filter((d) => d.slots.length > 0);
+  const availabilityTemplates = new Map<string, { day: number, hour: number }>();
+  (tutor.availability || []).forEach(iso => {
+      const d = parseISO(iso);
+      const day = d.getUTCDay();
+      const hour = d.getUTCHours();
+      const key = `${day}-${hour}`;
+      if (!availabilityTemplates.has(key)) {
+          availabilityTemplates.set(key, { day, hour });
+      }
+  });
 
-  /* ---------- render ---------- */
+  const bookableSlots: { iso: string, date: Date }[] = [];
+  availabilityTemplates.forEach(({ day, hour }) => {
+      let nextSlotDate = startOfWeek(now, { weekStartsOn: 0 });
+      nextSlotDate = addDays(nextSlotDate, day);
+      nextSlotDate.setUTCHours(hour, 0, 0, 0);
+
+      if (isBefore(nextSlotDate, now)) {
+          nextSlotDate = addDays(nextSlotDate, 7);
+      }
+      
+      bookableSlots.push({ iso: nextSlotDate.toISOString(), date: nextSlotDate });
+  });
+
+  const timetable: { label: string, slots: string[] }[] = DAYS.map(day => ({ label: day, slots: [] }));
+  bookableSlots.forEach(slot => {
+      const dayIndex = slot.date.getUTCDay();
+      timetable[dayIndex].slots.push(slot.iso);
+  });
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      {/* HERO */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -90,7 +109,6 @@ export default function TutorDetailPage() {
         </div>
       </motion.section>
 
-      {/* AVAILABILITY TIMETABLE */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,12 +118,13 @@ export default function TutorDetailPage() {
         <h2 className="mb-4 text-2xl font-semibold">Weekly Availability</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-7">
           {timetable.map(({ label, slots }) => (
+            slots.length > 0 &&
             <div key={label} className="flex flex-col gap-2">
               <span className="text-center font-semibold text-slate-700">
                 {label}
               </span>
               <div className="flex flex-col gap-2">
-                {slots.map((iso) => {
+                {slots.sort((a,b) => parseISO(a).getTime() - parseISO(b).getTime()).map((iso) => {
                   const slotDate = parseISO(iso);
                   const booked = bookedSlots.has(iso);
                   const past = isBefore(slotDate, now);
@@ -128,7 +147,7 @@ export default function TutorDetailPage() {
                           : "bg-emerald-500 text-white hover:bg-emerald-600" }`}
                     >
                       {format(slotDate, "HH:mm")}
-                      {booked && <span className="block text-[10px]">Booked</span>}
+                      {booked && <span className="block text-xs">Booked</span>}
                     </motion.button>
                   );
                 })}
@@ -138,7 +157,6 @@ export default function TutorDetailPage() {
         </div>
       </motion.section>
 
-      {/* REVIEWS */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -179,7 +197,6 @@ export default function TutorDetailPage() {
         </div>
       </motion.section>
 
-      {/* MODAL */}
       <AnimatePresence>
         {modalOpen && selectedSlot && (
           <motion.div
@@ -203,6 +220,10 @@ export default function TutorDetailPage() {
               <p className="mb-4 text-sm text-slate-600">
                 Cost: ${tutor.hourlyRate / 100}
               </p>
+               <div className="flex items-center space-x-2 my-4">
+                <Switch id="recurring-lesson" checked={isRecurring} onCheckedChange={setIsRecurring} />
+                <Label htmlFor="recurring-lesson">Make this a recurring lesson</Label>
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => setModalOpen(false)}
@@ -218,8 +239,9 @@ export default function TutorDetailPage() {
                     }
                     await bookLesson({
                       tutorUserId: tutor.user._id,
-                      datetime: selectedSlot,
+                      datetime: selectedSlot!,
                       isTrial: false,
+                      isRecurring,
                     });
                     setModalOpen(false);
                   }}

@@ -18,11 +18,10 @@ export default function Home() {
 
       {isSignedIn ? (
         <div>
-          <p className="mb-2">Welcome {user?.firstName}</p>
-          
+          <p className="mb-2"> Welcome {user?.firstName} </p> 
         </div>
       ) : (
-        <p>Please sign in to see tasks. <SignInButton /></p>
+        <p> Please sign in to see tasks. <SignInButton /> </p>
         
       )}
     </main>

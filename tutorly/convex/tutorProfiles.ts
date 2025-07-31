@@ -32,7 +32,7 @@ export const createProfile = mutation({
   },
 });
 
-export const updateProfile = mutation({
+export const updateTutorProfile = mutation({
   args: {
     userId: v.id("users"),
     updates: v.object({
@@ -256,5 +256,23 @@ export const recalcRating = mutation({
     if (!profile) return;
 
     await ctx.db.patch(profile._id, { rating: avg });
+  },
+});
+
+
+
+
+export const setAvailability = mutation({
+  args: {
+    userId: v.id("users"),
+    availability: v.array(v.string()),
+  },
+  handler: async (ctx, { userId, availability }) => {
+    const profile = await ctx.db
+      .query("tutorProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+    if (!profile) throw new Error("Tutor profile not found");
+    await ctx.db.patch(profile._id, { availability });
   },
 });

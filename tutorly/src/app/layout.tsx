@@ -5,6 +5,8 @@ import { ConvexClientProvider } from "../components/providers/convex-provider";
 import NavBar from "../components/NavBar";
 import { Toaster } from "react-hot-toast";
 
+import "@stream-io/video-react-sdk/dist/css/styles.css";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

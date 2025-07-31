@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "../../../../../convex/_generated/api";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +108,7 @@ export default function BecomeTutorPage() {
   const { user } = useUser();
   const router = useRouter();
   const createProfile = useMutation(api.tutorProfiles.createProfile);
-  const updateProfile = useMutation(api.tutorProfiles.updateProfile);
+  const updateProfile = useMutation(api.tutorProfiles.updateTutorProfile);
   const changeRole = useMutation(api.users.changeRole);
   const convexUser = useQuery(api.users.getUserByClerkId, { clerkId: user?.id ?? "" });
 

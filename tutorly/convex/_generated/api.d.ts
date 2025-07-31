@@ -16,6 +16,7 @@ import type {
 import type * as _utils from "../_utils.js";
 import type * as admin from "../admin.js";
 import type * as clerkWebhook from "../clerkWebhook.js";
+import type * as dashboard from "../dashboard.js";
 import type * as http from "../http.js";
 import type * as lessons from "../lessons.js";
 import type * as messages from "../messages.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   _utils: typeof _utils;
   admin: typeof admin;
   clerkWebhook: typeof clerkWebhook;
+  dashboard: typeof dashboard;
   http: typeof http;
   lessons: typeof lessons;
   messages: typeof messages;

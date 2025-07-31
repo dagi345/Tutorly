@@ -93,3 +93,25 @@ export const getCurrentUser = query({
       .unique();
   },
 });
+
+
+export const updateUserProfile = mutation({
+  args: {
+    userId: v.id("users"),
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, { userId, name, email, avatarUrl }) => {
+    const updates = {
+      name: name ?? undefined,
+      email: email ?? undefined,
+      avatarUrl: avatarUrl ?? undefined,
+    };
+
+    // If there are any updates, apply them
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch(userId, updates);
+    }
+  },
+});
