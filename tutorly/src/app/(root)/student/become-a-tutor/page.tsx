@@ -103,6 +103,8 @@ function AvailabilityPicker({ onChange }: { onChange: (slots: string[]) => void 
   );
 }
 
+
+
 // ---------- become-tutor page ----------
 export default function BecomeTutorPage() {
   const { user } = useUser();

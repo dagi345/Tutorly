@@ -199,10 +199,14 @@ export default function TutorProfilePage() {
     <FormItem>
       <FormLabel>Weekly Availability</FormLabel>
       <FormControl>
+
+
         <AvailabilityPicker
           value={field.value}
           onChange={field.onChange}
         />
+
+        
       </FormControl>
       <FormMessage />
     </FormItem>

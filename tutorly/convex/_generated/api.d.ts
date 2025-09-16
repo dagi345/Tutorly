@@ -23,6 +23,7 @@ import type * as messages from "../messages.js";
 import type * as packages from "../packages.js";
 import type * as reviews from "../reviews.js";
 import type * as seed from "../seed.js";
+import type * as stats_queries from "../stats/queries.js";
 import type * as tutorProfiles from "../tutorProfiles.js";
 import type * as users from "../users.js";
 
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   packages: typeof packages;
   reviews: typeof reviews;
   seed: typeof seed;
+  "stats/queries": typeof stats_queries;
   tutorProfiles: typeof tutorProfiles;
   users: typeof users;
 }>;

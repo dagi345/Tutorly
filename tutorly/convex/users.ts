@@ -40,6 +40,41 @@ export const createUser = internalMutation({   // <-- was mutation(...)
   },
 });
 
+export const ensureUserFromIdentity = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (existing) return existing._id;
+
+    const iso = new Date().toISOString();
+    const name =
+      (identity.name as string | undefined) ||
+      [identity.firstName, identity.lastName].filter(Boolean).join(" ") ||
+      "Anonymous";
+    const email = (identity.email as string | undefined) ?? "";
+    const avatarUrl = (identity.pictureUrl as string | undefined) ?? "";
+
+    const id = await ctx.db.insert("users", {
+      clerkId: identity.subject,
+      role: "student",
+      name,
+      email,
+      avatarUrl,
+      credits: 0,
+      createdAt: iso,
+      updatedAt: iso,
+    });
+
+    return id;
+  },
+});
+
 export const addCredits = mutation({
   args: { userId: v.id("users"), amount: v.number() },
   handler: async (ctx, { userId, amount }) => {
@@ -94,7 +129,6 @@ export const getCurrentUser = query({
   },
 });
 
-
 export const updateUserProfile = mutation({
   args: {
     userId: v.id("users"),
@@ -113,5 +147,19 @@ export const updateUserProfile = mutation({
     if (Object.keys(updates).length > 0) {
       await ctx.db.patch(userId, updates);
     }
+  },
+});
+
+
+
+
+export const getUserRole = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+      .unique();
+    return user?.role ?? "student";
   },
 });

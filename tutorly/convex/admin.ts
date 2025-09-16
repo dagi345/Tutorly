@@ -56,10 +56,10 @@ export const approveTutor = mutation({
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .unique();
     if (!profile) throw new Error("Profile not found");
-    await ctx.db.patch(profile._id, { 
-      rating: 0, 
+    await ctx.db.patch(profile._id, {
+      rating: 0,
       isApproved: true,
-      updatedAt: now() 
+      updatedAt: now(),
     });
   },
 });
@@ -74,7 +74,7 @@ export const rejectTutor = mutation({
     if (!profile) throw new Error("Profile not found");
     await ctx.db.patch(profile._id, {
       isApproved: false,
-      updatedAt: now()
+      updatedAt: now(),
     });
   },
 });
@@ -183,5 +183,57 @@ export const topTutors = query({
       });
     }
     return result.sort((a, b) => b.completedLessons - a.completedLessons);
+  },
+});
+
+/* -------------------------------------------------
+   6.  NEW DASHBOARD WIDGETS
+--------------------------------------------------*/
+
+export const getTopTutors = query({
+  handler: async (ctx) => {
+    const tutors = await ctx.db.query("tutorProfiles")
+      .collect()
+      .then(tutors => tutors.filter(t => t.isApproved));
+
+    const lessonCounts = await Promise.all(
+      tutors.map(async (tutor) => {
+        const lessons = await ctx.db
+          .query("lessons")
+          .withIndex("by_tutor", (q) => q.eq("tutorId", tutor.userId))
+          .filter(q => q.eq("status", "completed"))
+          .collect();
+        const user = await ctx.db.get(tutor.userId);
+        return {
+          tutorName: user?.name,
+          lessonCount: lessons.length
+        };
+      })
+    );
+
+    return lessonCounts.sort((a, b) => b.lessonCount - a.lessonCount).slice(0, 5);
+  },
+});
+
+export const getRecentLessons = query({
+  handler: async (ctx) => {
+    const lessons = await ctx.db.query("lessons").order("desc").take(5);
+    return Promise.all(
+      lessons.map(async (lesson) => {
+        const tutor = await ctx.db.get(lesson.tutorId);
+        const student = await ctx.db.get(lesson.studentId);
+        return {
+          ...lesson,
+          tutorName: tutor?.name,
+          studentName: student?.name,
+        };
+      })
+    );
+  },
+});
+
+export const getNewUsers = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("users").order("desc").take(5);
   },
 });

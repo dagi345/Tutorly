@@ -18,6 +18,7 @@ export default function MeetingSetup({ onSetupComplete, role }: Props) {
   const [joining, setJoining] = useState(false);
 
   /* ---------- Hooks (top-level, no early return) ---------- */
+  
   useEffect(() => {
     if (!call) return;
     call.camera.enable();

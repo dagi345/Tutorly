@@ -1,14 +1,23 @@
 "use client";
 import Link from "next/link";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api"; // Adjust the path as needed
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useEffect } from "react";
 
 export default function NavBar() {
   const { user } = useUser();
   const { signOut } = useClerk();
+
+  // Ensure a users row exists when signed in (call mutation once per sign-in)
+  const ensureUser = useMutation(api.users.ensureUserFromIdentity);
+  useEffect(() => {
+    if (user) {
+      ensureUser({}).catch(() => {});
+    }
+  }, [user, ensureUser]);
 
   const convexUser = useQuery(
     api.users.getUserByClerkId,
@@ -28,14 +37,13 @@ export default function NavBar() {
       { label: "Upcoming-Lessons", href: "/student/lessons"},
     ],
     tutor: [
-      { label: "Dashboard", href: "/tutors/dashboard" },
-      { label: "Profile", href: "/tutors/profile" },
-      { label: "Schedules", href: "/tutors/schedule" },
+      { label: "Dashboard", href: "/tutor/dashboard" },
+      { label: "Profile", href: "/tutor/profile" },
+      { label: "Schedules", href: "/tutor/schedule" },
     ],
     admin: [
       { label: "Dashboard", href: "/admin/dashboard" },
-      { label: "Approvals", href: "/admin/approvals" },
-      { label: "Payouts", href: "/admin/finance" },
+      { label: "Approvals", href: "/admin/approve-tutors" },
     ],
   };
 

@@ -108,7 +108,7 @@ const TutorDashboard = () => {
                           >
                             {lesson.status}
                           </Badge>
-                          <Link href={`/lesson/${lesson.callId}`} passHref>
+                          <Link href={`/tutors/schedule`} passHref>
                             <Button size="sm">Join Room</Button>
                           </Link>
                         </div>

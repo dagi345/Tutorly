@@ -4,26 +4,26 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import Hero from "@/components/landing/Hero";
+import Stats from "@/components/landing/Stats";
+import Features from "@/components/landing/Features";
+import HowItWorks from "@/components/landing/HowItWorks";
+import Testimonials from "@/components/landing/Testimonials";
+import Footer from "@/components/landing/Footer";
+import Link from "next/link";
 
 export default function Home() {
-  const { isSignedIn, user } = useUser();
- 
+  const { isSignedIn } = useUser();
 
   return (
-    <main className="p-6">
-      <header className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Tasks</h1>
-        <UserButton />
-      </header>
-
-      {isSignedIn ? (
-        <div>
-          <p className="mb-2"> Welcome {user?.firstName} </p> 
-        </div>
-      ) : (
-        <p> Please sign in to see tasks. <SignInButton /> </p>
-        
-      )}
+    <main className="container mx-auto ">
+      
+      <Hero />
+      <Stats />
+      <Features />
+      <HowItWorks />
+      <Testimonials />
+      <Footer />
     </main>
   );
 }

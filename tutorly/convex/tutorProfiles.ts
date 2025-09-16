@@ -120,20 +120,31 @@ export const getByTutorProfileId = query({
 });
 
 
+
+export const getUnapprovedTutors = query({
+  handler: async (ctx) => {
+    const unapproved = await ctx.db
+      .query("tutorProfiles")
+      .collect();
+
+    const enriched = [];
+    for (const profile of unapproved) {
+      if (!profile.isApproved) {
+        const user = await ctx.db.get(profile.userId);
+        enriched.push({ ...profile, user });
+      }
+    }
+    return enriched;
+  },
+});
+
 // convex/tutorProfiles.ts
 
-
-
-
-
-
 // convex/tutorProfiles.ts
-
 
 // Existing queries...
 
 // convex/tutorProfiles.ts
-
 
 export const listApprovedFiltered = query({
   args: {
