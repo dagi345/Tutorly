@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
+import toast from "react-hot-toast";
 
 export default function LessonCard({ lesson, role }: any) {
   const router = useRouter();
@@ -34,7 +35,7 @@ const createMeeting = async () => {
 
 const joinMeeting = () => {
   if (!lesson.callId) {
-    console.error("Tutor has not started the meeting yet");
+    toast.error("Tutor has not started the meeting yet");
     return;
   }
   router.push(`/lesson/${lesson.callId}?role=student`);
@@ -52,13 +53,15 @@ const joinMeeting = () => {
         <p className="text-sm text-slate-600">
           {role === "tutor" ? `Student: ${lesson.student.name}` : `Tutor: ${lesson.tutor.name}`}
         </p>
-        <p>status : {lesson.status}</p>
-      </div>
-      <Button onClick={role === "tutor" ? createMeeting : joinMeeting}  className="ml-4">
 
+        <p>status : {lesson.status}</p>
+
+      </div>
+
+      <Button onClick={role === "tutor" ? createMeeting : joinMeeting}  className="ml-4">
             {role === "tutor" ? "Start meeting" : "Join meeting"}
-            
       </Button>
+
     </div>
   );
 }

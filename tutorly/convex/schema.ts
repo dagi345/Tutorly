@@ -52,7 +52,7 @@ lessons: defineTable({
   .index("by_student", ["studentId"])
   .index("by_status", ["status"]),
 
-  
+
   /* ==========  REVIEWS  ========== */
   reviews: defineTable({
     tutorId: v.id("users"),

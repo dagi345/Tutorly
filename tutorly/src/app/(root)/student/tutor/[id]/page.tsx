@@ -65,6 +65,8 @@ export default function TutorDetailPage() {
       }
   });
 
+
+  
   const bookableSlots: { iso: string, date: Date }[] = [];
   availabilityTemplates.forEach(({ day, hour }) => {
       let nextSlotDate = startOfWeek(now, { weekStartsOn: 0 });

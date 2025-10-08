@@ -108,8 +108,8 @@ const TutorDashboard = () => {
                           >
                             {lesson.status}
                           </Badge>
-                          <Link href={`/tutors/schedule`} passHref>
-                            <Button size="sm">Join Room</Button>
+                          <Link href={`/tutor/schedule`} passHref>
+                            <Button size="sm">Start meeting</Button>
                           </Link>
                         </div>
                       </div>
@@ -197,8 +197,10 @@ const TutorDashboard = () => {
                   <Button variant="outline" className="w-full">
                     Edit Profile
                   </Button>
+
                 </Link>
-                <Link href="/tutors/schedule" passHref>
+                <Link href="/tutor/schedule" passHref>
+
                   <Button variant="outline" className="w-full">
                     My Schedule
                   </Button>

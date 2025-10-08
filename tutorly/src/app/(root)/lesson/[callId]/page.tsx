@@ -9,6 +9,8 @@ import { useState } from "react";
 import LoaderUI from "@/components/Loader";
 import useGetCallByID from "@/hooks/useGetCallByID";
 import Stream from "stream";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
 
 type Role = "host" | "student";
 
@@ -19,20 +21,29 @@ export default function LessonRoomPage() {
   const { user } = useUser();
   const client = useStreamClient();
   const [setupDone, setSetupDone] = useState(false);
+  
   const {call}= useGetCallByID(callId as string);
 
+
+
   if (!callId || !user || !client) return <LoaderUI />;
+
+  const lesson = useQuery(api.lessons.getByCallId, { callId: callId as string });
+  console.log(lesson)
+
 
   return (
     <StreamVideo client={client}>
       <StreamTheme>
 
       <StreamCall call={call}>
+
         {!setupDone ? (
           <MeetingSetup onSetupComplete={() => setSetupDone(true)} role={role} />
         ) : (
-          <MeetingRoom role={role} />
-        )}
+          <MeetingRoom role={role} lessonId={callId as string} />
+        )} 
+
       </StreamCall>
       </StreamTheme>
     </StreamVideo>

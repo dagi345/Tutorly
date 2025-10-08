@@ -244,8 +244,6 @@ export const hasBooked = query({
       .collect()).find((l) => l.tutorId === tutorId),
 });
 
-
-
 // convex/tutorProfiles.ts
 export const recalcRating = mutation({
   args: { tutorUserId: v.id("users") },
@@ -269,7 +267,6 @@ export const recalcRating = mutation({
     await ctx.db.patch(profile._id, { rating: avg });
   },
 });
-
 
 
 

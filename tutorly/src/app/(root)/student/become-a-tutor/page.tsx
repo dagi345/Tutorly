@@ -140,7 +140,7 @@ export default function BecomeTutorPage() {
   await createProfile({
     userId: convexUser._id,
     subjects: values.subjects.split(",").map(s => s.trim()),
-    hourlyRate: values.hourlyRate * 100,
+    hourlyRate: values.hourlyRate,
     availability: values.availability,
     bio: values.bio,
   });

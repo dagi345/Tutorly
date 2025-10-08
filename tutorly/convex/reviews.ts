@@ -5,9 +5,6 @@ import { now } from "./_utils";
 import { api } from "./_generated/api";
 
 
-
-
-
 export const getByLesson = query({
   args: { lessonId: v.id("lessons") },
   handler: async (ctx, { lessonId }) => {
@@ -20,11 +17,15 @@ export const getByLesson = query({
 
 // convex/reviews.ts
 export const createReview = mutation({
+
   args: {
     lessonId: v.id("lessons"),
     rating: v.number(),
     comment: v.string(),
   },
+
+
+
   handler: async (ctx, args) => {
     const lesson = await ctx.db.get(args.lessonId);
     if (!lesson) throw new Error("Lesson not found");
@@ -42,9 +43,9 @@ export const createReview = mutation({
     await ctx.runMutation(api.tutorProfiles.recalcRating, {
       tutorUserId: lesson.tutorId,
     });
+
   },
 });
-
 
 export const listByTutor = query({
   args: { tutorUserId: v.id("users") },

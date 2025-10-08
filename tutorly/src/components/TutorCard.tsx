@@ -103,7 +103,7 @@ console.log("blalaaaaaaaaaaaaaaaaaaaaaaaaaaaa", hasPrevious);
         </p>
 
         <div className="w-full  flex justify-end ">
-          <Link href={`/tutor/${tutor._id}`}>
+          <Link href={`/student/tutor/${tutor._id}`}>
           <Button size="lg" className="text-md">
             {buttonText}
           </Button>

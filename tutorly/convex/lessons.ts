@@ -228,6 +228,7 @@ export const listMyLessons = query({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
+    console.log(identity)
     if (!identity) throw new Error("Unauthorized");
 
     const user = await ctx.db.query("users")
@@ -245,7 +246,7 @@ export const listMyLessons = query({
       .withIndex("by_status", q => q.eq("status", "started"))
       .collect();
 
-    // Filter "started" lessons to only include those started within the last hour 
+    // Filter "started" lessons to only include those started within the last hour
     const now = new Date();
     const oneHour = 60 * 60 * 1000;
     const recentStartedLessons = startedLessons.filter(lesson => {
@@ -265,11 +266,6 @@ export const listMyLessons = query({
     );
   },
 });
-
-
-
-
-
 
 
 
@@ -322,8 +318,8 @@ export const cancelStaleBookedLessons = internalMutation({
 
     for (const lesson of lessonsToCancel) {
       await ctx.db.patch(lesson._id, { 
-        status: "cancelled", 
-        updatedAt: new Date().toISOString() 
+        status: "cancelled" , 
+        updatedAt: new Date().toISOString()
       });
 
       if (lesson.cost > 0) {
@@ -337,6 +333,88 @@ export const cancelStaleBookedLessons = internalMutation({
 });
 
 
+
+
+export const listMyCommentableLessons = query({
+  args: {},
+  handler: async (ctx) => {
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return { success: false, error: "Unauthorized" };
+      }
+
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+        .unique();
+
+      if (!user) {
+        return { success: false, error: "User not found" };
+      }
+
+      if (user.role !== "student") {
+        return { success: false, error: "Only students can comment on lessons" };
+      }
+
+      const now = new Date();
+      const thirtyMinutes = 30 * 60 * 1000;
+
+      // ✅ Fetch lessons for this student
+      const lessons = await ctx.db
+        .query("lessons")
+        .withIndex("by_student", (q) => q.eq("studentId", user._id))
+        .collect();
+
+      const commentableLessons = lessons.filter((lesson) => {
+        const lessonStart = new Date(lesson.datetime);
+
+        if (lesson.status === "completed") {
+          const lessonEnd = new Date(
+            lessonStart.getTime() + lesson.durationMinutes * 60000
+          );
+          return now.getTime() - lessonEnd.getTime() <= thirtyMinutes;
+        }
+
+        if (lesson.status === "cancelled") {
+          return now.getTime() - lessonStart.getTime() <= thirtyMinutes;
+        }
+
+        return false;
+      });
+
+      const lessonsWithTutor = await Promise.all(
+        commentableLessons.map(async (l) => ({
+          ...l,
+          tutor: await ctx.db.get(l.tutorId),
+          student: user,
+        }))
+      );
+      
+
+
+      return { success: true, data: lessonsWithTutor };
+    } catch (err) {
+      console.error("Error in listMyCommentableLessons:", err);
+      return { success: false, error: "Something went wrong. Please try again." };
+    }
+  },
+});
+
+
+
+
+
+export const getByCallId = query({
+  args: { callId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("lessons")
+      .withIndex("by_status", (q) => q.eq("status", "booked")) // optional filter
+      .filter((q) => q.eq(q.field("callId"), args.callId))
+      .unique();
+  },
+});
 
 
 
